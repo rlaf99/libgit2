@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+    <Target Name="Lg2NativeIncludeRuntimes"
+            AfterTargets="BeforeResolveReferences">
+        <ItemGroup>
+            <None Include="$(MSBuildThisFileDirectory)\..\runtimes\win-x64\native\git2.dll"
+                  CopyToOutputDirectory="PreserveNewest"
+                  Condition="'$([MSBuild]::IsOsPlatform(Windows))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X64'" />
+            <None Include="$(MSBuildThisFileDirectory)\..\runtimes\linux-x64\native\libgit2.so"
+                  CopyToOutputDirectory="PreserveNewest"
+                  Condition="'$([MSBuild]::IsOsPlatform(Linux))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='X64'" />
+            <None Include="$(MSBuildThisFileDirectory)\..\runtimes\osx-arm64\native\libgit2.dylib"
+                  CopyToOutputDirectory="PreserveNewest"
+                  Condition="'$([MSBuild]::IsOsPlatform(OSX))' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)'=='Arm64'" />
+        </ItemGroup>
+    </Target>
+</Project>
