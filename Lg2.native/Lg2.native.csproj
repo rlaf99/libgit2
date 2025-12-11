@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <VersionPrefix>0.191.0</VersionPrefix>
+        <Authors>R'laf | 阿乐夫</Authors>
+        <!-- <Company>Company Name</Company> -->
+        <!-- <Product>Product Name</Product> -->
+        <Title>libgit2 native runtimes for git-taut</Title>
+        <PackageId>Lg2.native</PackageId>
+        <PackageDescription>libgit2 native runtimes for git-taut</PackageDescription>
+        <PackageProjectUrl>https://github.com/rlaf99/libgit2</PackageProjectUrl>
+        <PackageTags>Lg2 libgit2 git-taut</PackageTags>
+	<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoWarn>NU5128</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="materials\LICENSE.md"
+              Pack="true"
+              Visible="false"
+              PackagePath="" />
+        <None Include="materials\README.md"
+              Pack="true"
+              Visible="false"
+              PackagePath="" />
+        <None Include="materials\Lg2.native.targets"
+              Pack="true"
+              PackagePath="build" />
+        <None Include="materials\runtimes\**\*.*">
+            <Pack>true</Pack>
+            <PackagePath>runtimes</PackagePath>
+        </None>
+    </ItemGroup>
+</Project>

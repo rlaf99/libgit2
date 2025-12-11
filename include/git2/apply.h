@@ -11,6 +11,7 @@
 #include "types.h"
 #include "oid.h"
 #include "diff.h"
+#include "patch.h"
 
 /**
  * @file git2/apply.h
@@ -180,6 +181,15 @@ GIT_EXTERN(int) git_apply(
 	git_diff *diff,
 	git_apply_location_t location,
 	const git_apply_options *options);
+
+ GIT_EXTERN(int) git_apply_patch(
+	git_buf *out,
+	char **filename,
+	unsigned int *mode,
+	const char *source,
+	size_t source_len,
+	git_patch *patch,
+	const git_apply_options *opts);
 
 /** @} */
 GIT_END_DECL

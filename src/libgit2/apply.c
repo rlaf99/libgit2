@@ -22,6 +22,7 @@
 #include "repository.h"
 #include "hashmap_str.h"
 #include "apply.h"
+#include "buf.h"
 
 typedef struct {
 	/* The lines that we allocate ourself are allocated out of the pool.
@@ -893,4 +894,16 @@ done:
 	git_reader_free(post_reader);
 
 	return error;
+}
+
+ int git_apply_patch(
+	git_buf *out,
+	char **filename,
+	unsigned int *mode,
+	const char *source,
+	size_t source_len,
+	git_patch *patch,
+	const git_apply_options *opts)
+{
+	GIT_BUF_WRAP_PRIVATE(out, git_apply__patch, filename, mode, source, source_len, patch, opts);
 }

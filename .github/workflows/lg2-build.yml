@@ -1,0 +1,194 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: Build Lg2.native
+
+on:
+  workflow_dispatch:
+    inputs:
+      temp_version:
+        description: 'Add temp version suffix'
+        default: false
+        type: boolean
+      target_os:
+        description: 'Select all OSes or a single OS'
+        default: all
+        type: choice
+        options:
+          - all
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+      build_type:
+        description: 'Select build type'
+        default: Release
+        type: choice
+        options:
+          - Release
+          - RelWithDebInfo
+          - Debug
+  # push:
+  #   branches: [ "Lg2" ]
+  # pull_request:
+  #   branches: [ "Lg2" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
+      matrix:
+        # os: [ubuntu-latest, windows-latest, macos-latest]
+        os: ${{ github.event.inputs.target_os == 'all'
+                && fromJSON('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJSON(format('["{0}"]', github.event.inputs.target_os)) }}
+        # build_type: [Release]
+        # c_compiler: [gcc, cl, clang]
+        # include:
+        #   - os: windows-latest
+        #     c_compiler: cl
+        #     cpp_compiler: cl
+        #     runtime_id: win-x64
+        #   - os: ubuntu-latest
+        #     c_compiler: gcc
+        #     cpp_compiler: g++
+        #     runtime_id: linux-x64
+        #   - os: macos-latest
+        #     c_compiler: clang
+        #     cpp_compiler: clang++
+        #     runtime_id: osx-arm64
+        # exclude:
+        #   - os: windows-latest
+        #     c_compiler: gcc
+        #   - os: windows-latest
+        #     c_compiler: clang
+        #   - os: ubuntu-latest
+        #     c_compiler: cl
+        #   - os: ubuntu-latest
+        #     c_compiler: clang
+        #   - os: macos-latest
+        #     c_compiler: gcc
+        #   - os: macos-latest
+        #     c_compiler: cl
+
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set runtime id
+      id: variants
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          echo "runtime_id=linux-x64" >> "$GITHUB_OUTPUT"
+        elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+          echo "runtime_id=win-x64" >> "$GITHUB_OUTPUT"
+        elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+          echo "runtime_id=osx-arm64" >> "$GITHUB_OUTPUT"
+        else
+          echo "unknown os: ${{ matrix.os }}"
+          exit 1
+        fi
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "install-output-dir=${{ github.workspace }}/install" >> "$GITHUB_OUTPUT"
+        echo "native-output-dir=${{ github.workspace }}/${{ steps.variants.outputs.runtime_id }}/native" >> "$GITHUB_OUTPUT"
+
+
+    - name: CMake Configure
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      # Just use default, no need to set c/cpp compiler
+      # -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+      # -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_BUILD_TYPE=${{ github.event.inputs.build_type }}
+        -DBUILD_TESTS=OFF -DBUILD_CLI=OFF -DUSE_SSH=exec -DUSE_HTTPS=OFF -DREGEX_BACKEND=builtin -DUSE_BUNDLED_ZLIB=ON -DLIBGIT2_FILENAME=git2
+        -S ${{ github.workspace }}
+
+    - name: CMake Build
+      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ github.event.inputs.build_type }}
+
+    - name: CMake Install
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ github.event.inputs.build_type }} --prefix ${{ steps.strings.outputs.install-output-dir }}
+
+    - name: Prepare Artifact for Windows
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        md ${{ steps.strings.outputs.native-output-dir }}
+        cp ${{ steps.strings.outputs.install-output-dir }}/bin/git2.dll ${{ steps.strings.outputs.native-output-dir }}
+    - name: Prepare Artifact for Linux
+      if: runner.os == 'Linux'
+      run: |
+        mkdir -p ${{ steps.strings.outputs.native-output-dir }}
+        cp ${{ steps.strings.outputs.install-output-dir }}/lib/libgit2.so ${{ steps.strings.outputs.native-output-dir }}
+    - name: Prepare Artifact for macOS
+      if: runner.os == 'macOS'
+      run: |
+        mkdir -p ${{ steps.strings.outputs.native-output-dir }}
+        cp ${{ steps.strings.outputs.install-output-dir }}/lib/libgit2.dylib ${{ steps.strings.outputs.native-output-dir }}
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.variants.outputs.runtime_id }}
+        path: ${{ github.workspace }}/${{ steps.variants.outputs.runtime_id }}
+        retention-days: 7
+
+  bundle:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Download Artifacts from Build
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}/Lg2.native/materials/runtimes/
+
+      - name: Set Version Suffix Option
+        id: version_suffix
+        shell: bash
+        run: |
+          if [ "${{ github.event.inputs.temp_version }}" == "true" ]; then
+            echo "option=--version-suffix \"temp-${{ github.run_number }}\"" >> "$GITHUB_OUTPUT"
+          else
+            echo "option=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create NuGet Package
+        run: |
+          cd ${{ github.workspace }}/Lg2.native/
+          dotnet build --configuration Release
+          dotnet pack --no-build --configuration Release --output ./artifacts ${{ steps.version_suffix.outputs.option }}
+
+      - name: Upload NuGet Package as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: ${{ github.workspace }}/Lg2.native/artifacts/*.nupkg
+          retention-days: 7
+
+      # - name: Publish Package to GitHub
+      #   run: |
+      #     dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      #     dotnet nuget push "${{ github.workspace }}/Lg2.native/artifacts/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
