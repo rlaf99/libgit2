@@ -147,7 +147,7 @@ jobs:
 
   bundle:
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
@@ -158,7 +158,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Download Artifacts from Build
         uses: actions/download-artifact@v4
