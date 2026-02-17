@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
-        <VersionPrefix>0.192.0</VersionPrefix>
+        <VersionPrefix>0.192.1</VersionPrefix>
         <Authors>R'laf | 阿乐夫</Authors>
         <!-- <Company>Company Name</Company> -->
         <!-- <Product>Product Name</Product> -->
