@@ -163,7 +163,7 @@ jobs:
       - name: Download Artifacts from Build
         uses: actions/download-artifact@v4
         with:
-          path: ${{ github.workspace }}/Lg2.native/materials/runtimes/
+          path: ${{ github.workspace }}/Lg2.native/packaging/runtimes/
 
       - name: Set Version Suffix Option
         id: version_suffix
