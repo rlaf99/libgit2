@@ -16,7 +16,7 @@ on:
         options:
           - all
           - windows-latest
-          - ubuntu-latest
+          - ubuntu-22.04
           - macos-latest
       build_type:
         description: 'Select build type'
@@ -41,9 +41,9 @@ jobs:
 
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        # os: [ubuntu-latest, windows-latest, macos-latest]
+        # os: [ubuntu-22.04, windows-latest, macos-latest]
         os: ${{ github.event.inputs.target_os == 'all'
-                && fromJSON('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJSON(format('["{0}"]', github.event.inputs.target_os)) }}
+                && fromJSON('["ubuntu-22.04", "windows-latest", "macos-latest"]') || fromJSON(format('["{0}"]', github.event.inputs.target_os)) }}
         # build_type: [Release]
         # c_compiler: [gcc, cl, clang]
         # include:
@@ -51,7 +51,7 @@ jobs:
         #     c_compiler: cl
         #     cpp_compiler: cl
         #     runtime_id: win-x64
-        #   - os: ubuntu-latest
+        #   - os: ubuntu-22.04
         #     c_compiler: gcc
         #     cpp_compiler: g++
         #     runtime_id: linux-x64
@@ -64,9 +64,9 @@ jobs:
         #     c_compiler: gcc
         #   - os: windows-latest
         #     c_compiler: clang
-        #   - os: ubuntu-latest
+        #   - os: ubuntu-22.04
         #     c_compiler: cl
-        #   - os: ubuntu-latest
+        #   - os: ubuntu-22.04
         #     c_compiler: clang
         #   - os: macos-latest
         #     c_compiler: gcc
@@ -81,7 +81,7 @@ jobs:
       id: variants
       shell: bash
       run: |
-        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+        if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
           echo "runtime_id=linux-x64" >> "$GITHUB_OUTPUT"
         elif [ "${{ matrix.os }}" == "windows-latest" ]; then
           echo "runtime_id=win-x64" >> "$GITHUB_OUTPUT"
@@ -147,7 +147,7 @@ jobs:
 
   bundle:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       packages: write
       contents: read
