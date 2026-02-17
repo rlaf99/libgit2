@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
-        <VersionPrefix>0.192.0</VersionPrefix>
+        <VersionPrefix>0.192.1</VersionPrefix>
         <Authors>R'laf | 阿乐夫</Authors>
         <!-- <Company>Company Name</Company> -->
         <!-- <Product>Product Name</Product> -->
@@ -17,18 +17,18 @@
         <NoWarn>NU5128</NoWarn>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="materials\LICENSE.md"
+        <None Include="packaging\LICENSE.md"
               Pack="true"
               Visible="false"
               PackagePath="" />
-        <None Include="materials\README.md"
+        <None Include="packaging\README.md"
               Pack="true"
               Visible="false"
               PackagePath="" />
-        <None Include="materials\Lg2.native.targets"
+        <None Include="packaging\Lg2.native.targets"
               Pack="true"
               PackagePath="build" />
-        <None Include="materials\runtimes\**\*.*">
+        <None Include="packaging\runtimes\**\*.*">
             <Pack>true</Pack>
             <PackagePath>runtimes</PackagePath>
         </None>
